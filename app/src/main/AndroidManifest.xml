@@ -12,14 +12,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Miraclevalidatekotlin"
         tools:targetApi="31">
+
         <activity
-            android:name=".MainActivity"
+            android:name="com.miracle.validatekotlin.Activity.PhoneNumber1"
+            android:exported="false" />
+        <activity
+            android:name="com.miracle.validatekotlin.Activity.PhoneNumber"
+            android:exported="false" />
+        <activity
+            android:name="com.miracle.validatekotlin.Activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Miraclevalidatekotlin">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
