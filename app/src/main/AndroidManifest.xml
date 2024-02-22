@@ -14,9 +14,6 @@
         tools:targetApi="31">
 
         <activity
-            android:name="com.miracle.validatekotlin.Activity.PhoneNumber1"
-            android:exported="false" />
-        <activity
             android:name="com.miracle.validatekotlin.Activity.PhoneNumber"
             android:exported="false" />
         <activity

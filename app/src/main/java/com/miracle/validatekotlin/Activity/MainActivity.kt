@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
                     startActivity(
                         Intent(
                             this@MainActivity,
-                            PhoneNumber1::class.java
+                            PhoneNumber::class.java
                         )
                     )
                 }) {
