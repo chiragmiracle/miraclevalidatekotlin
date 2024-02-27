@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Main miraclevalidatekotlin"
+rootProject.name = "Miracle Validate Kotlin"
 include(":app")
- 
+include(":ValidationUtility")

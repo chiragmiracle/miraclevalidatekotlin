@@ -69,4 +69,5 @@ dependencies {
 
     implementation("androidx.compose.material:material:1.6.1")
     implementation("com.googlecode.libphonenumber:libphonenumber:8.12.35")
+    implementation(project(mapOf("path" to ":ValidationUtility")))
 }
