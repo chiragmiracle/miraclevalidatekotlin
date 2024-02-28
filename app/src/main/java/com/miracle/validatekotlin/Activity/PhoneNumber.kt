@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
-import com.miracle.validatekotlin.ui.theme.textFont
+import com.miracle.validatekotlin.ui.theme.textReg
 
 class PhoneNumber : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,7 +85,7 @@ class PhoneNumber : ComponentActivity() {
                         text = "Phone Number Validation",
                         color = White,
                         fontSize = 20.sp,
-                        fontFamily = textFont,
+                        fontFamily = textReg,
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.align(alignment = Alignment.Center)
