@@ -1,6 +1,9 @@
 package com.miracle.validatekotlin.Activity
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -17,7 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
@@ -34,10 +39,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,8 +54,17 @@ import com.miracle.validatekotlin.ui.theme.textBold
 import com.miracle.validatekotlin.ui.theme.textHeading
 import com.miracle.validatekotlin.ui.theme.textReg
 import com.miracle.validationutility.Validation
+import com.miracle.validationutility.Validation.LengthConvert
+import com.miracle.validationutility.Validation.MassConvert
+import com.miracle.validationutility.Validation.compareDateTime
+import com.miracle.validationutility.Validation.compareDateTimeAgo
 import com.miracle.validationutility.Validation.generatePassword
 import com.miracle.validationutility.Validation.volumeConvert
+import com.miracle.validationutility.WordToNumberConverter
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -57,6 +74,11 @@ class MainActivity : ComponentActivity() {
 
     private var email = mutableStateOf("")
     private var emailResult = mutableStateOf("")
+
+    private lateinit var dateFormat: SimpleDateFormat
+    private lateinit var timeFormat: SimpleDateFormat
+    private lateinit var calendar: Calendar
+    private lateinit var currentDate: Date
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +102,48 @@ class MainActivity : ComponentActivity() {
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                WordToNumberConverterScreen()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = Color.Gray)
+                )
+                SelectDateTime()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = Color.Gray)
+                )
+                LengthConverter()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = Color.Gray)
+                )
+                MassConverter()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = Color.Gray)
+                )
+                VolumeConverterScreen()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = Color.Gray)
+                )
+                rendomPassword()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = Color.Gray)
+                )
                 phoneNumberValidation()
                 Box(
                     modifier = Modifier
@@ -94,21 +158,505 @@ class MainActivity : ComponentActivity() {
                         .height(1.dp)
                         .background(color = Color.Gray)
                 )
-                rendomPassword()
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(color = Color.Gray)
-                )
-                VolumeConverterScreen()
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(color = Color.Gray)
+            }
+        }
+    }
+
+    @Composable
+    fun WordToNumberConverterScreen() {
+        var inputWords by remember { mutableStateOf(TextFieldValue()) }
+        var result by remember { mutableStateOf("") }
+
+        Column(
+            modifier = Modifier
+                .padding(10.dp, 0.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Word To Number Converter",
+                color = Color.Black,
+                fontSize = 20.sp,
+                fontFamily = textHeading,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedTextField(value = inputWords,
+                onValueChange = { inputWords = it },
+                textStyle = TextStyle(
+                    fontSize = 15.sp,
+                    fontFamily = textReg,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                ),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrect = true,
+                    keyboardType = KeyboardType.Text,
+                ),
+                singleLine = true,
+                maxLines = 1,
+                modifier = Modifier
+                    .fillMaxWidth(),
+                label = {
+                    Text(
+                        "Enter Word",
+                        color = Color.Black,
+                        fontSize = 15.sp,
+                        fontFamily = textReg,
+                        fontWeight = FontWeight.Normal,
+                    )
+                }
+            )
+            Button(
+                onClick = {
+                    val resultValue = WordToNumberConverter.convertWordToNumber(inputWords.text)
+                    result = if (resultValue == -1L) "Invalid input" else resultValue.toString()
+                },
+                modifier = Modifier.padding(vertical = 10.dp)
+            ) {
+                Text(
+                    text = "Convert",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontFamily = textBold,
+                    fontWeight = FontWeight.Bold,
                 )
             }
+            Text(
+                text = "Result : " + result,
+                color = Color.Black,
+                fontSize = 15.sp,
+                fontFamily = textReg,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Start)
+                    .padding(horizontal = 10.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+
+    @Composable
+    fun SelectDateTime() {
+        val context = LocalContext.current
+        dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+        calendar = Calendar.getInstance()
+        currentDate = calendar.time
+        var selectedDateTime by remember { mutableStateOf("") }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "How many times and date ago",
+                color = Color.Black,
+                fontSize = 20.sp,
+                fontFamily = textHeading,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+            Button(
+                onClick = {
+                    showDateTimePicker(context) { selectedDate ->
+                        selectedDateTime = selectedDate
+                    }
+                },
+                modifier = Modifier.padding(vertical = 16.dp)
+            ) {
+                Text(
+                    "Select Date Time",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontFamily = textBold,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Text(
+                text = "Result : " + selectedDateTime,
+                color = Color.Black,
+                fontSize = 15.sp,
+                fontFamily = textReg,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Start)
+                    .padding(horizontal = 10.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+
+    private fun showDateTimePicker(context: android.content.Context, callback: (String) -> Unit) {
+        val currentDateCalendar = Calendar.getInstance()
+        val year = currentDateCalendar.get(Calendar.YEAR)
+        val month = currentDateCalendar.get(Calendar.MONTH)
+        val dayOfMonth = currentDateCalendar.get(Calendar.DAY_OF_MONTH)
+        DatePickerDialog(
+            context,
+            { _, year, monthOfYear, dayOfMonth ->
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, monthOfYear)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                val hour = calendar.get(Calendar.HOUR_OF_DAY)
+                val minute = calendar.get(Calendar.MINUTE)
+
+                TimePickerDialog(
+                    context,
+                    { _, hourOfDay, minute ->
+                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                        calendar.set(Calendar.MINUTE, minute)
+                        val selectedDate = calendar.time
+                        val selectedDateTime =
+                            dateFormat.format(selectedDate) + " " + timeFormat.format(
+                                selectedDate
+                            )
+                        if (selectedDate.after(currentDate)) {
+                            Toast.makeText(
+                                context,
+                                "Please select a date and time before the current date and time",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            val selectedDateTimeCalendar = Calendar.getInstance()
+                            selectedDateTimeCalendar.time = selectedDate
+                            val difference =
+                                compareDateTime(selectedDateTimeCalendar, Calendar.getInstance())
+                            val differenceAgo =
+                                compareDateTimeAgo(selectedDateTimeCalendar, Calendar.getInstance())
+                            callback.invoke("\n$selectedDateTime\n$difference\n$differenceAgo")
+                        }
+                    },
+                    hour,
+                    minute,
+                    false
+                ).show()
+            },
+            year,
+            month,
+            dayOfMonth
+        ).apply {
+            datePicker.maxDate = currentDateCalendar.timeInMillis
+        }.show()
+    }
+
+    @Composable
+    fun LengthConverter() {
+        var massValue by remember { mutableStateOf("") }
+        var result by remember { mutableStateOf("") }
+        var fromUnit by remember { mutableStateOf(0) }
+        var toUnit by remember { mutableStateOf(0) }
+
+        val units = listOf(
+            "Kilometer",
+            "Meter",
+            "Centimeter",
+            "Millimeter",
+            "Micrometer",
+            "Nanometer",
+            "Mile",
+            "Yard",
+            "Foot",
+            "Inch",
+            "Nautical Mile"
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Length Converter",
+                color = Color.Black,
+                fontSize = 20.sp,
+                fontFamily = textHeading,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(0.dp, 15.dp, 0.dp, 15.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    Arrangement.SpaceBetween
+                ) {
+                    CustomeSpinner(
+                        items = units,
+                        selected = fromUnit,
+                        onSelected = { fromUnit = it }
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(value = massValue,
+                        onValueChange = { massValue = it },
+                        textStyle = TextStyle(
+                            fontSize = 15.sp,
+                            fontFamily = textReg,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.Black,
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.None,
+                            autoCorrect = true,
+                            keyboardType = KeyboardType.Number,
+                        ),
+                        singleLine = true,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        label = {
+                            Text(
+                                "Enter Length",
+                                color = Color.Black,
+                                fontSize = 15.sp,
+                                fontFamily = textReg,
+                                fontWeight = FontWeight.Normal,
+                            )
+                        }
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .wrapContentSize(Alignment.Center)
+                        .padding(horizontal = 8.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "=",
+                        color = Color.Black,
+                        fontSize = 30.sp,
+                        fontFamily = textHeading,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .wrapContentSize(Alignment.Center)
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .fillMaxHeight(),
+                ) {
+                    CustomeSpinner(
+                        items = units,
+                        selected = toUnit,
+                        onSelected = { toUnit = it }
+                    )
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Box(
+                        Modifier
+                            .border(width = 1.dp, color = Gray, shape = RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .fillMaxWidth()
+                            .height(55.dp),
+                        Alignment.Center
+                    ) {
+                        Text(
+                            text = if (result.isNotEmpty()) result else "Result",
+                            style = MaterialTheme.typography.body1,
+                            color = Color.Black,
+                            fontSize = 15.sp,
+                            fontFamily = textReg,
+                            fontWeight = FontWeight.Normal,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.Center)
+                                .background(Color.White),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Button(
+                onClick = {
+                    val value = massValue.toDoubleOrNull() ?: return@Button
+                    val unitFrom = units[fromUnit]
+                    val unitTo = units[toUnit]
+                    result = LengthConvert(value, unitFrom, unitTo).toString()
+                }
+            ) {
+                Text(
+                    text = "Convert",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontFamily = textBold,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+
+    @Composable
+    fun MassConverter() {
+        var massValue by remember { mutableStateOf("") }
+        var result by remember { mutableStateOf("") }
+        var fromUnit by remember { mutableStateOf(0) }
+        var toUnit by remember { mutableStateOf(0) }
+
+        val units = listOf(
+            "Tonne",
+            "Kilogram",
+            "Gram",
+            "Milligram",
+            "Microgram",
+            "Imperial Ton",
+            "US Ton",
+            "Stone",
+            "Pound",
+            "Ounce"
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Mass Converter",
+                color = Color.Black,
+                fontSize = 20.sp,
+                fontFamily = textHeading,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(0.dp, 15.dp, 0.dp, 15.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    Arrangement.SpaceBetween
+                ) {
+                    CustomeSpinner(
+                        items = units,
+                        selected = fromUnit,
+                        onSelected = { fromUnit = it }
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(value = massValue,
+                        onValueChange = { massValue = it },
+                        textStyle = TextStyle(
+                            fontSize = 15.sp,
+                            fontFamily = textReg,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.Black,
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.None,
+                            autoCorrect = true,
+                            keyboardType = KeyboardType.Number,
+                        ),
+                        singleLine = true,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        label = {
+                            Text(
+                                "Enter Mass",
+                                color = Color.Black,
+                                fontSize = 15.sp,
+                                fontFamily = textReg,
+                                fontWeight = FontWeight.Normal,
+                            )
+                        }
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .wrapContentSize(Alignment.Center)
+                        .padding(horizontal = 8.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "=",
+                        color = Color.Black,
+                        fontSize = 30.sp,
+                        fontFamily = textHeading,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .wrapContentSize(Alignment.Center)
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .fillMaxHeight(),
+                ) {
+                    CustomeSpinner(
+                        items = units,
+                        selected = toUnit,
+                        onSelected = { toUnit = it }
+                    )
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Box(
+                        Modifier
+                            .border(width = 1.dp, color = Gray, shape = RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .fillMaxWidth()
+                            .height(55.dp),
+                        Alignment.Center
+                    ) {
+                        Text(
+                            text = if (result.isNotEmpty()) result else "Result",
+//                            text = result,
+                            style = MaterialTheme.typography.body1,
+                            color = Color.Black,
+                            fontSize = 15.sp,
+                            fontFamily = textReg,
+                            fontWeight = FontWeight.Normal,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.Center)
+                                .background(Color.White),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Button(
+                onClick = {
+                    val value = massValue.toDoubleOrNull() ?: return@Button
+                    val unitFrom = units[fromUnit]
+                    val unitTo = units[toUnit]
+                    result = MassConvert(value.toString(), unitFrom, unitTo).toString()
+                }
+            ) {
+                Text(
+                    text = "Convert",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontFamily = textBold,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 
@@ -156,22 +704,25 @@ class MainActivity : ComponentActivity() {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(0.dp, 15.dp, 0.dp, 15.dp)
             )
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(
-                    modifier = Modifier.width(160.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     Arrangement.SpaceBetween
                 ) {
-                    VolumeSpinner(
+                    CustomeSpinner(
                         items = units,
                         selected = selectedUnit1,
                         onSelected = { selectedUnit1 = it }
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(value = volumeValue,
                         onValueChange = { volumeValue = it },
                         textStyle = TextStyle(
@@ -199,48 +750,57 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     )
-//                    TextField(
-//                        value = volumeValue,
-//                        onValueChange = { volumeValue = it },
-//                        label = { Text("Enter Volume") },
-//                        singleLine = true,
-//                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-//                    )
                 }
-                Text(
-                    text = "=",
-                    color = Color.Black,
-                    fontSize = 30.sp,
-                    fontFamily = textHeading,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .height(100.dp)
-                        .padding(horizontal = 8.dp),
-                )
                 Column(
                     modifier = Modifier
-                        .width(160.dp)
+                        .wrapContentSize(Alignment.Center)
+                        .padding(horizontal = 8.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "=",
+                        color = Color.Black,
+                        fontSize = 30.sp,
+                        fontFamily = textHeading,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .wrapContentSize(Alignment.Center)
+                        .fillMaxWidth()
+                        .weight(1f)
                         .fillMaxHeight(),
                 ) {
-                    VolumeSpinner(
+                    CustomeSpinner(
                         items = units,
                         selected = selectedUnit2,
                         onSelected = { selectedUnit2 = it }
                     )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Text(
-                        text = result,
-                        style = MaterialTheme.typography.body1,
-                        color = Color.Black,
-                        fontSize = 15.sp,
-                        fontFamily = textReg,
-                        fontWeight = FontWeight.Normal,
-                        modifier = Modifier
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Box(
+                        Modifier
+                            .border(width = 1.dp, color = Gray, shape = RoundedCornerShape(10.dp))
+                            .background(Color.White)
                             .fillMaxWidth()
-                            .height(40.dp),
-                        textAlign = TextAlign.Center
-                    )
+                            .height(55.dp),
+                        Alignment.Center
+                    ) {
+                        Text(
+                            text = if (result.isNotEmpty()) result else "Result",
+                            style = MaterialTheme.typography.body1,
+                            color = Color.Black,
+                            fontSize = 15.sp,
+                            fontFamily = textReg,
+                            fontWeight = FontWeight.Normal,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.Center)
+                                .background(Color.White),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -260,16 +820,20 @@ class MainActivity : ComponentActivity() {
                     fontWeight = FontWeight.Bold,
                 )
             }
+            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 
     @Composable
-    fun VolumeSpinner(items: List<String>, selected: Int, onSelected: (Int) -> Unit) {
+    fun CustomeSpinner(items: List<String>, selected: Int, onSelected: (Int) -> Unit) {
         var expanded by remember { mutableStateOf(false) }
-        Box (
-            modifier = Modifier
-                .border(2.dp, Color.Gray),
-            contentAlignment = Alignment.Center
+        Box(
+            Modifier
+                .border(width = 1.dp, color = Gray, shape = RoundedCornerShape(8.dp))
+                .background(Color.White)
+                .fillMaxWidth()
+                .height(55.dp),
+            Alignment.Center
         ) {
             Text(
                 text = items[selected],
@@ -303,7 +867,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 
     @Composable
     fun rendomPassword() {
