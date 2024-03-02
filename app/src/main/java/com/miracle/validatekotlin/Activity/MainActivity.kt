@@ -2,6 +2,7 @@ package com.miracle.validatekotlin.Activity
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -53,14 +54,16 @@ import androidx.compose.ui.unit.sp
 import com.miracle.validatekotlin.ui.theme.textBold
 import com.miracle.validatekotlin.ui.theme.textHeading
 import com.miracle.validatekotlin.ui.theme.textReg
-import com.miracle.validationutility.Validation
-import com.miracle.validationutility.Validation.LengthConvert
-import com.miracle.validationutility.Validation.MassConvert
-import com.miracle.validationutility.Validation.compareDateTime
-import com.miracle.validationutility.Validation.compareDateTimeAgo
-import com.miracle.validationutility.Validation.generatePassword
-import com.miracle.validationutility.Validation.volumeConvert
-import com.miracle.validationutility.WordToNumberConverter
+import com.miracle.validationutility.Validation.IN_NumberToWord
+import com.miracle.validationutility.Validation.NumberToWordConverter
+import com.miracle.validationutility.Validation.Validation
+import com.miracle.validationutility.Validation.Validation.LengthConvert
+import com.miracle.validationutility.Validation.Validation.MassConvert
+import com.miracle.validationutility.Validation.Validation.compareDateTime
+import com.miracle.validationutility.Validation.Validation.compareDateTimeAgo
+import com.miracle.validationutility.Validation.Validation.generatePassword
+import com.miracle.validationutility.Validation.Validation.volumeConvert
+import com.miracle.validationutility.Validation.WordToNumberConverter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -90,6 +93,7 @@ class MainActivity : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     private fun HomeUI() {
+        val context = LocalContext.current
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -102,6 +106,37 @@ class MainActivity : ComponentActivity() {
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Spacer(modifier = Modifier.height(15.dp))
+                Button(onClick = {
+                    context.startActivity(
+                        Intent(
+                            context,
+                            Form_Validation::class.java
+                        )
+                    )
+                }) {
+                    Text(
+                        "Form Validation",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontFamily = textBold,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = Color.Gray)
+                )
+                NumberToWordConverterApp()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = Color.Gray)
+                )
                 WordToNumberConverterScreen()
                 Box(
                     modifier = Modifier
@@ -159,6 +194,110 @@ class MainActivity : ComponentActivity() {
                         .background(color = Color.Gray)
                 )
             }
+        }
+    }
+
+
+    @Composable
+    fun NumberToWordConverterApp() {
+        var inputNumber by remember { mutableStateOf("") }
+        var result by remember { mutableStateOf("") }
+        var selectedCountry by remember { mutableStateOf("IN") } // Default selected country
+
+        val units = listOf(
+            "IN" to "India",
+            "US" to "United States"
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 10.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Number To Word Converter",
+                color = Color.Black,
+                fontSize = 20.sp,
+                fontFamily = textHeading,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            CustomeSpinner(
+                items = units.map { it.second },
+                selected = units.indexOfFirst { it.first == selectedCountry },
+                onSelected = { selectedCountry = units[it].first }
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedTextField(
+                value = inputNumber,
+                onValueChange = { inputNumber = it.take(15) },
+                textStyle = TextStyle(
+                    fontSize = 15.sp,
+                    fontFamily = textReg,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                ),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrect = true,
+                    keyboardType = KeyboardType.Number,
+                ),
+                singleLine = true,
+                maxLines = 1,
+                modifier = Modifier.fillMaxWidth(),
+                label = {
+                    Text(
+                        "Enter Number",
+                        color = Color.Black,
+                        fontSize = 15.sp,
+                        fontFamily = textReg,
+                        fontWeight = FontWeight.Normal,
+                    )
+                }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                result = convertNumberToWord(selectedCountry, inputNumber) ?: ""
+            }) {
+                Text(
+                    "Convert",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontFamily = textBold,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Result : $result",
+                color = Color.Black,
+                fontSize = 15.sp,
+                fontFamily = textReg,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Start)
+                    .padding(horizontal = 10.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+
+    private fun convertNumberToWord(selectedCountry: String, inputNumber: String): String? {
+        return when (selectedCountry) {
+            "IN" -> {
+                IN_NumberToWord.convertCountToWord(inputNumber)
+            }
+
+            "US" -> {
+                NumberToWordConverter.convertCountToWord(inputNumber)
+            }
+
+            else -> null
         }
     }
 
@@ -1071,7 +1210,15 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(15.dp, 8.dp, 15.dp, 15.dp),
-            label = { Text("Enter Email") }
+            label = {
+                Text(
+                    "Enter Email",
+                    color = Color.Black,
+                    fontSize = 15.sp,
+                    fontFamily = textReg,
+                    fontWeight = FontWeight.Normal,
+                )
+            }
         )
         Button(onClick = {
             emailResult.value = if (Validation.validateEmail(email.value)) {
@@ -1130,7 +1277,15 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(15.dp, 8.dp, 15.dp, 15.dp),
-            label = { Text("Enter Phone Number") })
+            label = {
+                Text(
+                    "Enter Phone Number",
+                    color = Color.Black,
+                    fontSize = 15.sp,
+                    fontFamily = textReg,
+                    fontWeight = FontWeight.Normal,
+                )
+            })
         Button(onClick = {
             numberResult.value = if (Validation.validatePhoneNumber(phoneNumber.value)) {
                 "Valid Phone Number"

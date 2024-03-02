@@ -1,4 +1,4 @@
-package com.miracle.validationutility
+package com.miracle.validationutility.Validation
 
 object WordToNumberConverter {
 

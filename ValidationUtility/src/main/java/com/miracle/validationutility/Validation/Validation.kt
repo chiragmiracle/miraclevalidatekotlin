@@ -1,4 +1,4 @@
-package com.miracle.validationutility
+package com.miracle.validationutility.Validation
 
 import android.util.Patterns
 import java.util.Calendar
@@ -34,8 +34,6 @@ object Validation {
             .map { _ -> charPool.random() }
             .joinToString("")
     }
-
-
 
     fun volumeConvert(value: Double, factorFrom: String, factorTo: String): Double {
         val conversionFactors = mapOf(
